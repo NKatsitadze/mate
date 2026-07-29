@@ -46,9 +46,12 @@ export const Header = () => {
 
         {sessionUser ? (
           <>
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground hover:bg-accent">
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
             {sessionUser.role === 'admin' && (
               <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground hover:bg-accent">
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/admin">Admin</Link>
               </Button>
             )}
             <div className="flex items-center gap-3">

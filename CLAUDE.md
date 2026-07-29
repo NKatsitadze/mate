@@ -304,12 +304,15 @@ Ask these exact axes; each meaningfully changes the design:
 
 ```
 STATUS: locked
-Product:    SaaS dashboard / B2B
-Palette:    Monochrome + electric indigo accent
-            base #FAFAFA (light) / #0A0A0A (dark); accent #5B5BFF
-            tokens: --primary oklch(0.555 0.243 271) light / oklch(0.62 0.21 271) dark
-Type:       Geometric sans — Space Grotesk (display, 500/600/700) + Inter (body) + Geist Mono (data)
-Feel:       Balanced — CSS load-rise stagger + hover micro-interactions; reduced-motion respected
-Signature:  Left-aligned typographic hero with one accent word + honest stat strip;
-            dashboard app-shell with mobile drawer sidebar and segmented indigo channel meters
+Product:    Consumer app (hyper-local marketplace)
+Palette:    Clean & trustworthy blue
+            base #FAFAFA (light) / #0A0A0A (dark); accent #2563EB
+            tokens: --primary oklch(0.546 0.245 263) light / oklch(0.65 0.19 263) dark
+Type:       Humanist & friendly — Plus Jakarta Sans (display, 500/600/700) + Inter (body) + Geist Mono (data)
+Feel:       Balanced — CSS load-rise stagger (reuse existing .animate-rise/-1..-4) + subtle hover
+            micro-interactions on cards; reduced-motion respected
+Signature:  Hero with inline search + category/district filters flowing straight into a live
+            listings grid (browse IS the homepage, not a funnel); merchant/admin panels reuse the
+            same mobile-drawer sidebar shell; discretized-cell meters (no progress bars) for
+            usage/limit indicators
 ```

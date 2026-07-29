@@ -22,7 +22,7 @@ export const useLogin = () => {
       avatar: sessionUser.avatar ?? '',
     });
 
-    window.location.href = sessionUser.role === 'admin' ? '/dashboard' : '/';
+    window.location.href = '/dashboard';
   };
 
   const login = async (data: LoginType) => {

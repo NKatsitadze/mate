@@ -1,4 +1,4 @@
-export const APP_NAME = 'NextJS Starter';
+export const APP_NAME = 'Mate';
 
 export const APP_DESCRIPTION =
-  'A production-ready Next.js starter with auth, database, state management, and tests.';
+  'Find discounted goods and short-term rentals from local shops near you in Tbilisi.';

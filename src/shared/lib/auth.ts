@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 
+import { isEmailAllowedService } from '@/features/allowlist/service/allowlist.service';
 import { userRepository } from '@/features/auth/repository/user.repository';
 import { upsertOAuthUserService } from '@/features/auth/service/auth.service';
 import { hashPassword } from '@/shared/utils/password';
@@ -42,6 +43,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider !== 'google' || !user.email || !user.name) {
         return true;
+      }
+
+      const existing = await userRepository.findByEmail(user.email);
+      if (!existing) {
+        const allowed = await isEmailAllowedService(user.email);
+        if (!allowed) return false;
       }
 
       await upsertOAuthUserService({
@@ -96,5 +103,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: '/sign-in',
+    error: '/',
   },
 });

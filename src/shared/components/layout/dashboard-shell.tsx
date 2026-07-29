@@ -4,13 +4,15 @@ import { useState, type ReactNode } from 'react';
 
 import { Sidebar } from '@/shared/components/layout/sidebar';
 import { Button } from '@/shared/components/ui/button';
+import { type SidebarNavItem } from '@/shared/const/navigation.const';
 import { cn } from '@/shared/lib/utils';
 
 type DashboardShellProps = {
   children: ReactNode;
+  navItems: SidebarNavItem[];
 };
 
-export const DashboardShell = ({ children }: DashboardShellProps) => {
+export const DashboardShell = ({ children, navItems }: DashboardShellProps) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -30,7 +32,7 @@ export const DashboardShell = ({ children }: DashboardShellProps) => {
       </div>
 
       {/* Desktop static sidebar */}
-      <Sidebar className="hidden lg:flex" />
+      <Sidebar items={navItems} className="hidden lg:flex" />
 
       {/* Mobile off-canvas drawer */}
       <div
@@ -68,6 +70,7 @@ export const DashboardShell = ({ children }: DashboardShellProps) => {
             </Button>
           </div>
           <Sidebar
+            items={navItems}
             className="w-full flex-1 border-r-0"
             onNavigate={() => setOpen(false)}
           />

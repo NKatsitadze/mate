@@ -71,7 +71,13 @@ const eslintConfig = defineConfig([
     rules: {
       "no-console": "off",
     }
-  }
+  },
+  {
+    files: ["src/shared/components/ui/**"],
+    rules: {
+      "max-len": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

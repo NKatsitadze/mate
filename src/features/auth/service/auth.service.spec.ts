@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+vi.mock('@/features/allowlist/service/allowlist.service', () => ({
+  isEmailAllowedService: vi.fn(),
+}));
+
 vi.mock('@/features/auth/repository/user.repository', () => ({
   userRepository: {
     findByEmail: vi.fn(),
@@ -8,11 +12,13 @@ vi.mock('@/features/auth/repository/user.repository', () => ({
   },
 }));
 
+import { isEmailAllowedService } from '@/features/allowlist/service/allowlist.service';
 import { userRepository } from '@/features/auth/repository/user.repository';
 
 import { loginService, registerService, getUserByIdService } from './auth.service';
 
 const mockRepo = vi.mocked(userRepository);
+const mockIsEmailAllowed = vi.mocked(isEmailAllowedService);
 
 const fakeUser = {
   _id: { toString: () => '507f1f77bcf86cd799439011' },
@@ -24,7 +30,18 @@ const fakeUser = {
 };
 
 describe('registerService', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsEmailAllowed.mockResolvedValue(true);
+  });
+
+  it('returns 403 when the email is not on the allowlist, without checking EMAIL_TAKEN', async () => {
+    mockIsEmailAllowed.mockResolvedValueOnce(false);
+    const result = await registerService({ fullName: 'Alice', email: 'alice@example.com', password: 'password123' });
+    expect(result.status).toBe(403);
+    expect(result.data).toEqual({ error: 'EMAIL_NOT_ALLOWED' });
+    expect(mockRepo.findByEmail).not.toHaveBeenCalled();
+  });
 
   it('returns 409 when email already taken', async () => {
     mockRepo.findByEmail.mockResolvedValueOnce(fakeUser as never);

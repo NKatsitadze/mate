@@ -34,12 +34,18 @@ vi.mock('@/features/auth/service/auth.service', () => ({
   upsertOAuthUserService: vi.fn(),
 }));
 
+vi.mock('@/features/allowlist/service/allowlist.service', () => ({
+  isEmailAllowedService: vi.fn(),
+}));
+
 // Import after mocks so NextAuth() is called with mocked providers
 await import('@/shared/lib/auth');
 const { userRepository } = await import('@/features/auth/repository/user.repository');
 const { upsertOAuthUserService } = await import('@/features/auth/service/auth.service');
+const { isEmailAllowedService } = await import('@/features/allowlist/service/allowlist.service');
 const mockRepo = vi.mocked(userRepository);
 const mockUpsert = vi.mocked(upsertOAuthUserService);
+const mockIsEmailAllowed = vi.mocked(isEmailAllowedService);
 
 const fakeUser = {
   _id: { toString: () => '507f1f77bcf86cd799439011' },
@@ -63,7 +69,9 @@ describe('auth callbacks — signIn', () => {
     expect(mockUpsert).not.toHaveBeenCalled();
   });
 
-  it('upserts Google user and returns true', async () => {
+  it('upserts Google user and returns true when the email is allowlisted', async () => {
+    mockRepo.findByEmail.mockResolvedValueOnce(null);
+    mockIsEmailAllowed.mockResolvedValueOnce(true);
     mockUpsert.mockResolvedValueOnce({ isNew: false });
     const result = await capturedConfig.callbacks.signIn({
       user: { email: 'g@gmail.com', name: 'Google User', image: 'https://img.com/avatar.png' },
@@ -78,6 +86,8 @@ describe('auth callbacks — signIn', () => {
   });
 
   it('returns true for Google even when image is null', async () => {
+    mockRepo.findByEmail.mockResolvedValueOnce(null);
+    mockIsEmailAllowed.mockResolvedValueOnce(true);
     mockUpsert.mockResolvedValueOnce({ isNew: true });
     const result = await capturedConfig.callbacks.signIn({
       user: { email: 'g@gmail.com', name: 'Google User', image: null },
@@ -85,6 +95,29 @@ describe('auth callbacks — signIn', () => {
     });
     expect(result).toBe(true);
     expect(mockUpsert).toHaveBeenCalledWith(expect.objectContaining({ avatar: null }));
+  });
+
+  it('bypasses the allowlist check entirely for an existing user', async () => {
+    mockRepo.findByEmail.mockResolvedValueOnce(fakeUser as never);
+    mockUpsert.mockResolvedValueOnce({ isNew: false });
+    const result = await capturedConfig.callbacks.signIn({
+      user: { email: 'alice@example.com', name: 'Alice', image: null },
+      account: { provider: 'google' },
+    });
+    expect(result).toBe(true);
+    expect(mockIsEmailAllowed).not.toHaveBeenCalled();
+    expect(mockUpsert).toHaveBeenCalled();
+  });
+
+  it('blocks sign-in for a new user whose email is not allowlisted', async () => {
+    mockRepo.findByEmail.mockResolvedValueOnce(null);
+    mockIsEmailAllowed.mockResolvedValueOnce(false);
+    const result = await capturedConfig.callbacks.signIn({
+      user: { email: 'stranger@gmail.com', name: 'Stranger', image: null },
+      account: { provider: 'google' },
+    });
+    expect(result).toBe(false);
+    expect(mockUpsert).not.toHaveBeenCalled();
   });
 });
 

@@ -8,17 +8,23 @@ vi.mock('mongoose', async (importOriginal) => {
       ...actual,
       connect: vi.fn(),
       disconnect: vi.fn(),
+      connection: { readyState: 0 },
     },
   };
 });
 
 import { MongoClientManager } from './mongo';
 
+function setReadyState(state: number): void {
+  Object.defineProperty(mongoose.connection, 'readyState', { value: state, configurable: true });
+}
+
 describe('MongoClientManager', () => {
   let manager: MongoClientManager;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    setReadyState(0);
     manager = new MongoClientManager();
   });
 
@@ -30,7 +36,10 @@ describe('MongoClientManager', () => {
   });
 
   it('does not reconnect when already connected', async () => {
-    vi.mocked(mongoose.connect).mockResolvedValueOnce(mongoose);
+    vi.mocked(mongoose.connect).mockImplementationOnce(async () => {
+      setReadyState(1);
+      return mongoose;
+    });
     await manager.connect();
     await manager.connect();
     expect(mongoose.connect).toHaveBeenCalledOnce();
@@ -50,11 +59,17 @@ describe('MongoClientManager', () => {
   });
 
   it('disconnect calls mongoose.disconnect and resets state', async () => {
-    vi.mocked(mongoose.connect).mockResolvedValueOnce(mongoose);
-    vi.mocked(mongoose.disconnect).mockResolvedValueOnce();
+    vi.mocked(mongoose.connect).mockImplementationOnce(async () => {
+      setReadyState(1);
+      return mongoose;
+    });
+    vi.mocked(mongoose.disconnect).mockImplementationOnce(async () => {
+      setReadyState(0);
+    });
     await manager.connect();
     await manager.disconnect();
     expect(mongoose.disconnect).toHaveBeenCalledOnce();
+
     vi.mocked(mongoose.connect).mockResolvedValueOnce(mongoose);
     await manager.connect();
     expect(mongoose.connect).toHaveBeenCalledTimes(2);

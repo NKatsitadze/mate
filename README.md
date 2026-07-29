@@ -149,6 +149,25 @@ Wipe local MongoDB data:
 docker compose down -v
 ```
 
+## Bootstrapping the First Admin
+
+Registration is gated by an email allowlist (`AllowedEmail` collection) — only emails an
+admin has explicitly added can create an account, via credentials or Google OAuth. Since
+adding an allowlist entry itself requires an admin, the very first admin has to be created
+manually, once:
+
+1. Connect to MongoDB (e.g. via `mongosh` or MongoDB Compass) and insert one allowed email:
+   ```js
+   db.allowedemails.insertOne({ email: 'you@example.com', addedByAdminId: new ObjectId(), createdAt: new Date(), updatedAt: new Date() })
+   ```
+2. Register normally through the app with that email.
+3. Flip that user's `role` to `admin` directly in the database:
+   ```js
+   db.users.updateOne({ email: 'you@example.com' }, { $set: { role: 'admin' } })
+   ```
+
+From then on, that admin can add further allowed emails from `/admin/allowlist` in the app.
+
 ## Production Notes
 
 - `next.config.ts` pins Turbopack root to this repository to avoid parent-lockfile

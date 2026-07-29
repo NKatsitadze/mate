@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 
 import { useAuthStore } from '@/features/auth/hooks/useAuthStore';
 import { SignUpType } from '@/features/auth/validations/auth.validation';
+import { AUTH_ERROR_MESSAGES, DEFAULT_AUTH_ERROR_MESSAGE } from '@/shared/const/auth.const';
 import { http } from '@/shared/lib/http';
 
 export const useRegister = () => {
@@ -16,7 +17,8 @@ export const useRegister = () => {
       await http.post('/auth/register', data);
       router.push('/sign-in');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      const code = err instanceof Error ? err.message : undefined;
+      setError(code ? (AUTH_ERROR_MESSAGES[code] ?? DEFAULT_AUTH_ERROR_MESSAGE) : DEFAULT_AUTH_ERROR_MESSAGE);
     } finally {
       setLoading(false);
     }

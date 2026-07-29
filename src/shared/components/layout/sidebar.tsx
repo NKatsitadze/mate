@@ -1,21 +1,27 @@
 'use client';
-import { LayoutDashboard, type LucideIcon } from 'lucide-react';
+import { CreditCard, LayoutDashboard, ListChecks, Mail, Package, Store, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { SIDEBAR_NAV_ITEMS, type SidebarNavItem } from '@/shared/const/navigation.const';
+import { type SidebarNavItem } from '@/shared/const/navigation.const';
 import { cn } from '@/shared/lib/utils';
 
 const SIDEBAR_ICON_MAP: Record<SidebarNavItem['icon'], LucideIcon> = {
-  dashboard: LayoutDashboard,
+  overview: LayoutDashboard,
+  listings: Package,
+  billing: CreditCard,
+  shops: Store,
+  'admin-listings': ListChecks,
+  allowlist: Mail,
 };
 
 type SidebarProps = {
+  items: SidebarNavItem[];
   className?: string;
   onNavigate?: () => void;
 };
 
-export const Sidebar = ({ className, onNavigate }: SidebarProps) => {
+export const Sidebar = ({ items, className, onNavigate }: SidebarProps) => {
   const pathname = usePathname();
 
   return (
@@ -29,7 +35,7 @@ export const Sidebar = ({ className, onNavigate }: SidebarProps) => {
         Workspace
       </p>
       <nav className="flex flex-col gap-1">
-        {SIDEBAR_NAV_ITEMS.map(({ href, label, icon }) => {
+        {items.map(({ href, label, icon }) => {
           const Icon = SIDEBAR_ICON_MAP[icon];
           const isActive = pathname === href;
 
