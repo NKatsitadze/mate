@@ -14,25 +14,17 @@ import { addAllowedEmailService, isEmailAllowedService, listAllowedEmailsService
 
 const mockRepo = vi.mocked(allowedEmailRepository);
 
+// TEMPORARY: enforcement is switched off via ALLOWLIST_ENFORCED in allowlist.service.ts,
+// so every email is allowed right now regardless of the repository's contents. When that
+// flag is flipped back to true, restore this block to assert against the repository again
+// (see git history for the pre-bypass version of these three tests).
 describe('isEmailAllowedService', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('returns true when the email is on the allowlist', async () => {
-    mockRepo.findByEmail.mockResolvedValueOnce({ email: 'shop@example.com' } as never);
-    const result = await isEmailAllowedService('shop@example.com');
-    expect(result).toBe(true);
-  });
-
-  it('returns false when the email is not on the allowlist', async () => {
-    mockRepo.findByEmail.mockResolvedValueOnce(null);
+  it('allows any email while enforcement is temporarily disabled, without consulting the repository', async () => {
     const result = await isEmailAllowedService('nobody@example.com');
-    expect(result).toBe(false);
-  });
-
-  it('normalizes email casing before checking', async () => {
-    mockRepo.findByEmail.mockResolvedValueOnce(null);
-    await isEmailAllowedService('Shop@Example.com');
-    expect(mockRepo.findByEmail).toHaveBeenCalledWith('shop@example.com');
+    expect(result).toBe(true);
+    expect(mockRepo.findByEmail).not.toHaveBeenCalled();
   });
 });
 

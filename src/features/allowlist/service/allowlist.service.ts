@@ -5,7 +5,13 @@ import { AllowedEmail } from '@/features/allowlist/types/allowlist.types';
 import { AddAllowedEmailType } from '@/features/allowlist/validations/allowlist.validation';
 import { PaginatedResult, ServiceResult } from '@/shared/types/common';
 
+// TEMPORARY: allowlist enforcement is disabled while open registration is on.
+// Flip this back to true to re-enable gating sign-up/sign-in by allowlisted email.
+const ALLOWLIST_ENFORCED = false;
+
 export async function isEmailAllowedService(email: string): Promise<boolean> {
+  if (!ALLOWLIST_ENFORCED) return true;
+
   const existing = await allowedEmailRepository.findByEmail(email.toLowerCase());
   return existing !== null;
 }
